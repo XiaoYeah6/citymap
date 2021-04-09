@@ -1,32 +1,48 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+    <div id="header">
+      <div id="web-title">城市印象</div>
+      <div id="head-user">
+        <div id="avatar">
+          <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+        </div>
+        <div id="head-logininfo">
+          <router-link to="/user">未登录</router-link>
+        </div>
+      </div>
     </div>
-    <router-view/>
+    <div>
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+#app{
+  background: #e5e9f2;
 }
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+#header{
+  position: fixed;
+  width: 100%;
+  height: 10%;
+  background: #ff0036;
+}
+#web-title{
+  text-align: center;
+  line-height: 70px;
+  font-size: 30px;
+}
+#head-user{
+  position: absolute;
+  right: 0.1rem;
+  top: 5px;
+}
+#avatar{
+  font-size: 0.1rem;
+}
+#head-logininfo{
+  font-size: 0.01rem;
+  position: relative;
+  top: -10px;
 }
 </style>
