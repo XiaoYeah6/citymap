@@ -11,7 +11,7 @@
           ></el-avatar>
         </div>
         <div id="head-logininfo">
-          <router-link to="/user">未登录</router-link>
+          <router-link to="/login">未登录</router-link>
         </div>
       </div>
     </div>
