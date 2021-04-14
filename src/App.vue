@@ -22,6 +22,9 @@
 </template>
 
 <style lang="scss">
+body{
+  background: #e8ecf3;
+}
 #app {
   background: #e5e9f2;
 }
