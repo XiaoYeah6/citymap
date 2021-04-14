@@ -13,8 +13,38 @@
               :show-all-levels="false"
             ></el-cascader>
           </div>
+          <div class="up-btn">
+            <el-row>
+              <el-button type="primary" round>发表主题</el-button>
+            </el-row>
+          </div>
         </div>
-        <div class="forum-container"></div>
+        <div class="forum-container">
+          <ul>
+            <li
+              class="forum-Item"
+              v-for="(item, index) in forumItem"
+              :key="index"
+            >
+              <div class="item-header">
+                <img :src="item.userImg" alt="" class="userImg" />
+                <span class="userName">{{ item.userName }}</span>
+                <span class="time">{{ item.time }}</span>
+              </div>
+
+              <p class="userText">{{ item.text }}</p>
+              <div class="imgUrl-container">
+                <div
+                  v-for="itemImg in item.imgs"
+                  :key="itemImg.imgIndex"
+                  class="imgUrl"
+                >
+                  <img :src="itemImg.imgUrl" alt="" />
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
       </el-aside>
       <el-main id="home-main">
         <div id="map"></div>
@@ -25,7 +55,6 @@
 
 <script>
 import BMap from "BMap";
-
 
 export default {
   mounted() {
@@ -98,6 +127,112 @@ export default {
           ],
         },
       ],
+      forumItem: [
+        {
+          userId: "123",
+          userName: "xxx",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text:
+            "沙发打发撒旦法阿斯蒂芬asfjdosajfpiosajnfddsanfiujsndfijskdhjfuosanfd;",
+          time: "2021-03-05",
+          imgs: [
+            {
+              imgIndex: "123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+            {
+              imgIndex: "123132123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+            {
+              imgIndex: "123132123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+            {
+              imgIndex: "123132123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+        {
+          userId: "124",
+          userName: "x",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text: "的说法是否阿斯蒂芬沙发",
+          time: "2025-03-01",
+          imgs: [
+            {
+              imgIndex: "123123123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+        {
+          userId: "124",
+          userName: "x",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text: "的说法是否阿斯蒂芬沙发",
+          time: "2025-03-01",
+          imgs: [
+            {
+              imgIndex: "123123123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+        {
+          userId: "124",
+          userName: "x",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text: "的说法是否阿斯蒂芬沙发",
+          time: "2025-03-01",
+          imgs: [
+            {
+              imgIndex: "123123123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+        {
+          userId: "124",
+          userName: "x",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text: "的说法是否阿斯蒂芬沙发",
+          time: "2025-03-01",
+          imgs: [
+            {
+              imgIndex: "123123123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+        {
+          userId: "124",
+          userName: "x",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text: "的说法是否阿斯蒂芬沙发",
+          time: "2025-03-01",
+          imgs: [
+            {
+              imgIndex: "123123123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+        {
+          userId: "124",
+          userName: "x",
+          userImg: "https://cdn.v2ex.com/gravatar",
+          text: "的说法是否阿斯蒂芬沙发",
+          time: "2025-03-01",
+          imgs: [
+            {
+              imgIndex: "123123123123",
+              imgUrl: "https://cdn.v2ex.com/gravatar",
+            },
+          ],
+        },
+      ],
     };
   },
 
@@ -162,21 +297,91 @@ export default {
 }
 
 // 论坛样式
+.el-aside {
+  border-radius: 8px;
+  scrollbar-width: none; /* firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.el-aside::-webkit-scrollbar {
+  display: none; /* Chrome Safari */
+}
+
 .forum-header {
   background: #fff;
   padding-top: 6px;
   padding-left: 6px;
-  height: 8%;
+  height: 52px;
   border-radius: 8px;
+  position: fixed;
+  top: 80px;
+  width: 294px;
+  z-index: 999;
 }
 .block {
-  width: 120px;
+  width: 130px;
   height: 80px;
+  line-height: 45px;
+  margin-left: 10px;
+}
+.up-btn {
+  position: absolute;
+  top: 8px;
+  right: 15px;
 }
 .forum-container {
-  background: #fff;
-  border-radius: 10px;
-  margin-top: 2%;
+  background: #e8ecf3;
+  border-radius: 8px;
+  margin-top: 70px;
   height: 89%;
+  box-sizing: border-box;
+  transform: translate(0, 0);
+}
+.item-header {
+  padding-top: 10px;
+}
+.forum-Item {
+  margin-bottom: 7px;
+  background-color: #fff;
+  border-radius: 8px;
+}
+.userImg {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-left: 6px;
+  margin-right: 6px;
+}
+.time {
+  position: fixed;
+  right: 10px;
+  color: #94a4b8;
+}
+// 图片样式
+.imgUrl-container {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin-left: 9px;
+  padding-bottom: 6px;
+}
+.imgUrl {
+  float: left;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+.imgUrl img {
+  width: 80px;
+  height: 90px;
+}
+.userText {
+  margin-top: 6px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow: hidden;
 }
 </style>
