@@ -9,6 +9,7 @@ import '@/assets/css/reset.css'
 import '@/assets/js/rem.js'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
+import '../mock/mock.js'
 
 Vue.use(ElementUI);
 

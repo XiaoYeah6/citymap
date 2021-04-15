@@ -55,6 +55,8 @@
 
 <script>
 import BMap from "BMap";
+import axios from "axios";
+import url from "../service.config.js"
 
 export default {
   mounted() {
@@ -337,6 +339,7 @@ export default {
   height: 89%;
   box-sizing: border-box;
   transform: translate(0, 0);
+  position: relative;
 }
 .item-header {
   padding-top: 10px;
