@@ -133,7 +133,7 @@ export default {
         {
           userId: "123",
           userName: "xxx",
-          userImg: "https://cdn.v2ex.com/gravatar",
+          userImg: "https://api.r10086.com/火影忍者1.php",
           text:
             "沙发打发撒旦法阿斯蒂芬asfjdosajfpiosajnfddsanfiujsndfijskdhjfuosanfd;",
           time: "2021-03-05",
@@ -159,7 +159,7 @@ export default {
         {
           userId: "124",
           userName: "x",
-          userImg: "https://cdn.v2ex.com/gravatar",
+          userImg: "https://api.r10086.com/火影忍者1.php",
           text: "的说法是否阿斯蒂芬沙发",
           time: "2025-03-01",
           imgs: [

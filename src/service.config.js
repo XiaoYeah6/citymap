@@ -1,7 +1,8 @@
-// const SERVERURL = '';
+const SERVERURL = 'http://localhost:3000/';
 
-// const URL = {
-//     getForumItem: 
-// }
+const URL = {
+    registUser: SERVERURL + 'user/registUser',
+    loginUser: SERVERURL + 'user/loginUser'
+}
 
-// export default URL;
+export default URL;
