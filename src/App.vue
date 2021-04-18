@@ -2,16 +2,16 @@
   <div id="app">
     <div id="header">
       <div id="web-title">
-        <router-link to="/">城市印象</router-link>
+        <span @click="goToHome" class="title-text">城市印象</span>
       </div>
       <div id="head-user">
         <div id="avatar">
           <el-avatar
-            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+            :src=userInfo.userImg
           ></el-avatar>
         </div>
-        <div id="head-logininfo">
-          <router-link to="/login">未登录</router-link>
+        <div id="head-logininfo" @click="goToLogin">
+          <div>{{ userInfo.userName }}</div>
         </div>
       </div>
     </div>
@@ -20,6 +20,29 @@
     </div>
   </div>
 </template>
+
+<script>
+import { mapState } from "vuex";
+
+export default {
+  methods: {
+    goToHome (){
+      this.$router.push("/");
+    },
+    goToLogin (){
+      if(this.userInfo.userName == '未登录'){
+        this.$router.push("/login");
+      }else{
+        this.$router.push("/user");
+      }
+    }
+  },
+  computed: {
+    ...mapState(['userInfo'])
+  }
+}
+</script>
+
 
 <style lang="scss">
 body{
@@ -39,6 +62,9 @@ body{
   line-height: 70px;
   font-size: 30px;
 }
+.title-text{
+  cursor: pointer;
+}
 #head-user {
   position: absolute;
   right: 0.1rem;
@@ -51,6 +77,8 @@ body{
   font-size: 0.01rem;
   position: relative;
   top: -10px;
+  text-align: center;
+  cursor: pointer;
 }
 
 #web-body {

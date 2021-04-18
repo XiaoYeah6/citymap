@@ -43,6 +43,7 @@
                   @click="registHandler"
                   type="primary"
                   id="register-btn"
+                  :loading="this.isLoading"
                   >注册</el-button
                 >
               </el-row>
@@ -57,6 +58,7 @@
 <script>
 import axios from "axios";
 import url from "@/service.config.js";
+import { mapActions } from "vuex";
 
 export default {
   data() {
@@ -66,14 +68,18 @@ export default {
       loginPassword: "",
       registUsername: "",
       registPassword: "",
+      isLoading: false,
     };
   },
   methods: {
+    ...mapActions(["loginAction"]),
     registHandler() {
+      this.isLoading = true;
       if (this.registPassword == "" || this.registUsername == "") {
         this.$alert("用户名或密码不能为空！", "Tips", {
           confirmButtonText: "确定",
         });
+        this.isLoading = false;
       } else {
         axios({
           url: url.registUser,
@@ -93,7 +99,8 @@ export default {
                 duration: 2000,
               });
               this.registUsername = this.registPassword = "";
-              console.log("跳转登录!");
+              this.isLoading = false;
+              this.activeName = "login";
             } else {
               const h = this.$createElement;
               this.$notify({
@@ -101,10 +108,11 @@ export default {
                 message: h(
                   "i",
                   { style: "color: teal" },
-                  "用户名重复啦，请重试！(如果多次尝试还是不行，请联系管理员！)"
+                  "用户名重复啦，请重试！"
                 ),
                 duration: 2000,
               });
+              this.isLoading = false;
             }
           })
           .catch((err) => {
@@ -118,23 +126,61 @@ export default {
               ),
               duration: 2000,
             });
+            this.isLoading = false;
           });
       }
     },
-    loginHandler(){
+    loginHandler() {
+      this.isLoading = true;
       axios({
         url: url.loginUser,
-        method: 'post',
+        method: "post",
         data: {
           userName: this.loginUsername,
-          passWord: this.loginPassword
-        }
-      }).then(res=>{
-        console.log(res);
-      }).catch(err=>{
-
+          passWord: this.loginPassword,
+        },
       })
-    }
+        .then((res) => {
+          console.log(res);
+          if (res.data.code == 200) {
+            const h = this.$createElement;
+            this.$notify({
+              title: "登录信息",
+              message: h("i", { style: "color: teal" }, "登录成功！"),
+              duration: 2000,
+            });
+            //保存登录状态
+            this.loginAction(res.data.userInfo);
+            this.isLoading = false;
+            this.$router.push("/");
+          } else if (res.data.code == 201) {
+            const h = this.$createElement;
+            this.$notify({
+              title: "登录信息",
+              message: h("i", { style: "color: teal" }, "用户名不存在！"),
+              duration: 2000,
+            });
+            this.isLoading = false;
+          }else if(res.data.code == 202){
+            const h = this.$createElement;
+            this.$notify({
+              title: "登录信息",
+              message: h("i", { style: "color: teal" }, "密码错误！"),
+              duration: 2000,
+            });
+            this.isLoading = false;
+          }
+        })
+        .catch((err) => {
+          const h = this.$createElement;
+          this.$notify({
+            title: "登录信息",
+            message: h("i", { style: "color: teal" }, "登录失败！请联系管理员"),
+            duration: 2000,
+          });
+          this.isLoading = false;
+        });
+    },
   },
 };
 </script>

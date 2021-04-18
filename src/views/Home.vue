@@ -15,7 +15,9 @@
           </div>
           <div class="up-btn">
             <el-row>
-              <el-button type="primary" round>发表主题</el-button>
+              <el-button type="primary" @click="drawer = true"
+                >发表主题</el-button
+              >
             </el-row>
           </div>
         </div>
@@ -50,13 +52,31 @@
         <div id="map"></div>
       </el-main>
     </el-container>
+    <el-drawer
+    id="publish-title"
+      title="动态发表"
+      :visible.sync="drawer"
+      :direction="direction"
+      :before-close="handleClose"
+    >
+      <div class="publish-container">
+        <el-input
+          type="textarea"
+          :rows="10"
+          placeholder="请输入内容"
+          v-model="textarea"
+          class="publish-input"
+        >
+        </el-input>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <script>
 import BMap from "BMap";
 import axios from "axios";
-import url from "../service.config.js"
+import url from "../service.config.js";
 
 export default {
   mounted() {
@@ -235,6 +255,9 @@ export default {
           ],
         },
       ],
+      drawer: false,
+      direction: "rtl",
+      textarea: '',
     };
   },
 
@@ -272,6 +295,13 @@ export default {
       //   }
       //   var myCity = new BMap.LocalCity();
       //   myCity.get(myFun);
+    },
+    handleClose(done) {
+      this.$confirm("还没有确认发布哦，确认关闭吗？")
+        .then((_) => {
+          done();
+        })
+        .catch((_) => {});
     },
   },
 };
@@ -386,5 +416,17 @@ export default {
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
+}
+
+//发表页面样式
+#publish-title{
+  font-size: 25px;
+}
+.publish-container{
+  width: 400px;
+}
+.publish-input{
+  position: relative;
+  left: 30px;
 }
 </style>
