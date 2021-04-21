@@ -1,3 +1,6 @@
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-upload-imgs/dist/vueUploadImgs.umd.min.js"></script>
+
 <template>
   <div>
     <el-container id="home-container">
@@ -16,14 +19,19 @@
           <div class="up-btn">
             <el-row>
               <el-button type="primary" @click="drawer = true"
-                >发表主题</el-button
+                >发布动态</el-button
               >
             </el-row>
           </div>
         </div>
         <div class="forum-container">
-          <ul>
-            <li
+          <div class="noneShow" :style="isShowNone">
+            <div class="noneText">这座城市还没有人发过动态哦！</div>
+          </div>
+
+          <el-col id="articleList" v-infinite-scroll="load">
+            <el-card
+              shadow="hover"
               class="forum-Item"
               v-for="(item, index) in forumItem"
               :key="index"
@@ -31,7 +39,7 @@
               <div class="item-header">
                 <img :src="item.userImg" alt="" class="userImg" />
                 <span class="userName">{{ item.userName }}</span>
-                <span class="time">{{ item.time }}</span>
+                <span class="time">{{ item.createDate }}</span>
               </div>
 
               <p class="userText">{{ item.text }}</p>
@@ -41,273 +49,366 @@
                   :key="itemImg.imgIndex"
                   class="imgUrl"
                 >
-                  <img :src="itemImg.imgUrl" alt="" />
+                  <img :src="itemImg.url" alt="" />
                 </div>
               </div>
-            </li>
-          </ul>
+            </el-card>
+          </el-col>
         </div>
       </el-aside>
       <el-main id="home-main">
-        <div id="map"></div>
+        <div class="map" id="map"></div>
+        <div>
+          <el-row>
+            <el-button
+              icon="el-icon-aim"
+              circle
+              id="aim"
+              :loading="this.isAimLoad"
+              @click="toAim"
+            ></el-button>
+          </el-row>
+        </div>
       </el-main>
     </el-container>
     <el-drawer
-    id="publish-title"
+      id="publish-title"
       title="动态发表"
       :visible.sync="drawer"
       :direction="direction"
       :before-close="handleClose"
     >
+      <el-row>
+        <el-button
+          type="primary"
+          id="imgUpload-btn"
+          round
+          @click="uploadForum"
+          :loading="this.upLoading"
+          >发布动态</el-button
+        >
+      </el-row>
       <div class="publish-container">
         <el-input
           type="textarea"
-          :rows="10"
+          :rows="8"
           placeholder="请输入内容"
           v-model="textarea"
           class="publish-input"
         >
         </el-input>
+        <div class="imgUpload">
+          <vue-upload-imgs
+            multiple
+            compress
+            :before-read="beforeRead"
+            :after-read="afterRead"
+            :before-remove="beforeRemove"
+            :limit="limit"
+            :type="type"
+            @preview="preview"
+            @exceed="exceed"
+            @oversize="oversize"
+            v-model="files"
+          >
+            <span class="imgUpload-title">图片上传</span>
+            <span class="imgUpload-alert"
+              >（限制9张，小于1M，png、jpg格式）</span
+            >
+          </vue-upload-imgs>
+          <div class="preview-bg" v-show="isPreview">
+            <div class="dialog">
+              <button class="close-preview" @click="closePreview">关闭</button>
+              <img :src="previewIMG" class="preview-img" />
+            </div>
+          </div>
+        </div>
       </div>
     </el-drawer>
   </div>
 </template>
 
 <script>
-import BMap from "BMap";
 import axios from "axios";
 import url from "../service.config.js";
+import { mapState } from "vuex";
+import AMap from "AMap";
+import citys from "../../data/citys.json";
 
 export default {
-  mounted() {
-    this.mapBD();
-  },
   data() {
     return {
-      value: [],
-      options: [
-        {
-          value: "zhinan",
-          label: "指南",
-          children: [
-            {
-              value: "shejiyuanze",
-              label: "设计原则",
-            },
-            {
-              value: "daohang",
-              label: "导航",
-            },
-          ],
-        },
-        {
-          value: "zujian",
-          label: "组件",
-          children: [
-            {
-              value: "basic",
-              label: "Basic",
-            },
-            {
-              value: "form",
-              label: "Form",
-            },
-            {
-              value: "data",
-              label: "Data",
-            },
-            {
-              value: "notice",
-              label: "Notice",
-            },
-            {
-              value: "navigation",
-              label: "Navigation",
-            },
-            {
-              value: "others",
-              label: "Others",
-            },
-          ],
-        },
-        {
-          value: "ziyuan",
-          label: "资源",
-          children: [
-            {
-              value: "axure",
-              label: "Axure Components",
-            },
-            {
-              value: "sketch",
-              label: "Sketch Templates",
-            },
-            {
-              value: "jiaohu",
-              label: "组件交互文档",
-            },
-          ],
-        },
-      ],
-      forumItem: [
-        {
-          userId: "123",
-          userName: "xxx",
-          userImg: "https://api.r10086.com/火影忍者1.php",
-          text:
-            "沙发打发撒旦法阿斯蒂芬asfjdosajfpiosajnfddsanfiujsndfijskdhjfuosanfd;",
-          time: "2021-03-05",
-          imgs: [
-            {
-              imgIndex: "123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-            {
-              imgIndex: "123132123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-            {
-              imgIndex: "123132123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-            {
-              imgIndex: "123132123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-        {
-          userId: "124",
-          userName: "x",
-          userImg: "https://api.r10086.com/火影忍者1.php",
-          text: "的说法是否阿斯蒂芬沙发",
-          time: "2025-03-01",
-          imgs: [
-            {
-              imgIndex: "123123123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-        {
-          userId: "124",
-          userName: "x",
-          userImg: "https://cdn.v2ex.com/gravatar",
-          text: "的说法是否阿斯蒂芬沙发",
-          time: "2025-03-01",
-          imgs: [
-            {
-              imgIndex: "123123123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-        {
-          userId: "124",
-          userName: "x",
-          userImg: "https://cdn.v2ex.com/gravatar",
-          text: "的说法是否阿斯蒂芬沙发",
-          time: "2025-03-01",
-          imgs: [
-            {
-              imgIndex: "123123123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-        {
-          userId: "124",
-          userName: "x",
-          userImg: "https://cdn.v2ex.com/gravatar",
-          text: "的说法是否阿斯蒂芬沙发",
-          time: "2025-03-01",
-          imgs: [
-            {
-              imgIndex: "123123123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-        {
-          userId: "124",
-          userName: "x",
-          userImg: "https://cdn.v2ex.com/gravatar",
-          text: "的说法是否阿斯蒂芬沙发",
-          time: "2025-03-01",
-          imgs: [
-            {
-              imgIndex: "123123123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-        {
-          userId: "124",
-          userName: "x",
-          userImg: "https://cdn.v2ex.com/gravatar",
-          text: "的说法是否阿斯蒂芬沙发",
-          time: "2025-03-01",
-          imgs: [
-            {
-              imgIndex: "123123123123",
-              imgUrl: "https://cdn.v2ex.com/gravatar",
-            },
-          ],
-        },
-      ],
+      upLoading: false,
+      isAimLoad: false,
+      currentProId: "110000",
+      currentCityId: "110000",
+      currentAddress: "北京市西城区大栅栏街道",
+      value: ["110000", "110000"],
+      options: citys,
+      forumItem: [],
       drawer: false,
       direction: "rtl",
-      textarea: '',
+      textarea: "",
+      articleStart: 0,
+      articleLimit: 30,
+
+      //是否显示无人发表动态提示
+      isShowNone: "display: none;",
+
+      //上传图片
+      files: [],
+      maxSize: 1024 * 1024, // 1024 KB
+      previewIMG: null,
+      limit: 9,
+      isPreview: false,
+      type: 0, // 0 预览模式 1 列表模式 2 预览模式 + 上传按钮
     };
   },
 
+  mounted() {
+    this.MapInit();
+  },
+
   methods: {
-    // 级联选择器
-    handleChange(value) {
-      console.log(value);
-    },
-    // mounted时创建地图并定位
-    mapBD() {
-      var map = new BMap.Map("map"); // 创建Map实例
-      map.centerAndZoom(new BMap.Point(116.404, 39.915), 17); // 初始化地图,设置中心点坐标和地图级别
-      map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
-      map.addControl(new BMap.NavigationControl()); //平移缩放控件
-      map.addControl(new BMap.ScaleControl()); //比例尺
-      map.addControl(new BMap.GeolocationControl());
-
-      //浏览器定位
-      var geolocation = new BMap.Geolocation();
-      geolocation.getCurrentPosition(function(r) {
-        if (this.getStatus() == BMAP_STATUS_SUCCESS) {
-          var mk = new BMap.Marker(r.point);
-          map.addOverlay(mk);
-          map.panTo(r.point);
-        } else {
-          alert("定位失败，请刷新重试或者手动更换城市！" + this.getStatus());
-        }
+    //初次加载以及点击定位按
+    toAim() {
+      var map = new AMap.Map("map", {
+        resizeEnable: true,
+        center: [116.397428, 39.90923],
+        zoom: 13,
       });
+      //定位
+      AMap.plugin("AMap.Geolocation", () => {
+        var geolocation = new AMap.Geolocation({
+          showButton: false,
+          enableHighAccuracy: true, //是否使用高精度定位，默认:true
+          timeout: 10000, //超过10秒后停止定位，默认：5s
+          buttonPosition: "RB", //定位按钮的停靠位置
+          buttonOffset: new AMap.Pixel(10, 20), //定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+          zoomToAccuracy: true, //定位成功后是否自动调整地图视野到定位点
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition((status, result) => {
+          if (status == "complete") {
+            var addLat = result.position.lat;
+            var addLng = result.position.lng;
+            var add = addLng + "," + addLat;
+            //获取当前城市id
+            AMap.plugin("AMap.Geocoder", () => {
+              var geocoder = new AMap.Geocoder({
+                extensions: "base",
+              });
+              map.addControl(geocoder);
+              geocoder.getAddress(add, (status, result) => {
+                if (status === "complete" && result.regeocode) {
+                  var currentAddressId =
+                    result.regeocode.addressComponent.adcode;
+                  this.currentAddress =
+                    result.regeocode.addressComponent.province +
+                    result.regeocode.addressComponent.city +
+                    result.regeocode.addressComponent.district;
+                  this.currentCityId = currentAddressId.substring(0, 4) + "00";
+                  this.currentProId = currentAddressId.substring(0, 2) + "0000";
+                  this.value = [this.currentProId, this.currentCityId];
+                  this.getArticle();
+                } else {
+                  const h = this.$createElement;
+                  this.$notify({
+                    title: "城市信息",
+                    message: h(
+                      "i",
+                      { style: "color: teal" },
+                      "获取当前城市失败！"
+                    ),
+                    duration: 2000,
+                  });
+                  this.getArticle();
 
-      //IP定位
-      //   function myFun(result) {
-      //     var cityName = result.name;
-      //     map.setCenter(cityName);
-      //     alert("当前定位城市:" + cityName);
-      //   }
-      //   var myCity = new BMap.LocalCity();
-      //   myCity.get(myFun);
+                }
+              });
+            });
+          } else {
+            const h = this.$createElement;
+            this.$notify({
+              title: "定位信息",
+              message: h("i", { style: "color: teal" }, "获取当前位置失败！"),
+              duration: 2000,
+            });
+            this.getArticle();
+          }
+        });
+      });
+    },
+
+    //初始化地图
+    MapInit() {
+      this.toAim();
+    },
+
+    // 级联选择器, 点击城市列表时
+    handleChange(value) {
+      this.forumItem = [];
+      this.currentCityId = value[1]
+      this.getArticle();
     },
     handleClose(done) {
-      this.$confirm("还没有确认发布哦，确认关闭吗？")
-        .then((_) => {
-          done();
-        })
-        .catch((_) => {});
+      if (this.textarea == "" && this.files.length == []) {
+        done();
+      } else {
+        this.$confirm("确认退出吗？")
+          .then((_) => {
+            done();
+          })
+          .catch((_) => {});
+      }
     },
+    //发布动态
+    uploadForum() {
+      if (this.userInfo.userName == "未登录") {
+        alert("请先登录！");
+        this.$router.push("/login");
+      } else {
+        if (this.textarea == "" && this.files == "") {
+          alert("请输入内容！");
+        } else {
+          //上传信息
+          this.upLoading = true;
+          axios({
+            url: url.writeArticle,
+            method: "post",
+            data: {
+              userName: this.userInfo.userName,
+              userImg: this.userInfo.userImg,
+              text: this.textarea,
+              imgs: this.files,
+              address: this.currentAddress,
+              cityId: this.currentCityId,
+            },
+          })
+            .then((res) => {
+              if (res.data.code == 200) {
+                const h = this.$createElement;
+                this.$notify({
+                  title: "发布信息",
+                  message: h("i", { style: "color: teal" }, "发布成功！"),
+                  duration: 2000,
+                });
+                this.textarea = "";
+                this.files = [];
+                this.upLoading = false;
+                this.getArticle();
+                this.$router.push('/')
+              } else {
+                const h = this.$createElement;
+                this.$notify({
+                  title: "发布信息",
+                  message: h(
+                    "i",
+                    { style: "color: teal" },
+                    "抱歉，发布失败（502）！"
+                  ),
+                  duration: 2000,
+                });
+                this.upLoading = false;
+              }
+            })
+            .catch((err) => {
+              const h = this.$createElement;
+              this.$notify({
+                title: "发布信息",
+                message: h(
+                  "i",
+                  { style: "color: teal" },
+                  "出现了一点问题（400）！"
+                ),
+                duration: 2000,
+              });
+              this.upLoading = false;
+            });
+        }
+      }
+    },
+    //获取数据库动态
+    getArticle() {
+      this.forumItem = [];
+      this.isShowNone = "display: none;"
+      axios({
+        url: url.getArticle,
+        method: "get",
+        params: {
+          cityId: this.currentCityId,
+          start: this.articleStart,
+          limit: this.articleLimit,
+        },
+      })
+        .then((res) => {
+          var i;
+          for( i=0; i<res.data.length; i++ ){
+            res.data[i].createDate = res.data[i].createDate.substring(0, 10);
+          }
+          this.forumItem = res.data;
+          if( res.data.length == 0 ){
+            this.isShowNone = "display: ;";
+          }
+        })
+        .catch((err) => {
+          console.log('err');
+          const h = this.$createElement;
+            this.$notify({
+              title: "动态信息",
+              message: h("i", { style: "color: teal" }, "获取动态失败！"),
+              duration: 2000,
+            });
+        });
+    },
+
+    load(){
+      getArticle();
+    },
+
+    //上传图片
+    beforeRemove(index, file) {
+      return true;
+    },
+
+    preview(index, file) {
+      this.previewIMG = file.url;
+      this.isPreview = true;
+    },
+
+    exceed() {
+      alert(`只能上传${this.limit}张图片`);
+    },
+
+    beforeRead(files) {
+      for (let i = 0, len = files.length; i < len; i++) {
+        const file = files[i];
+        if (file.type != "image/jpeg" && file.type != "image/png") {
+          alert("只能上传jpg和png格式的图片");
+          return false;
+        }
+      }
+      return true;
+    },
+
+    closePreview() {
+      this.isPreview = false;
+    },
+  },
+  computed: {
+    ...mapState(["userInfo"]),
   },
 };
 </script>
 
 <style lang="scss">
+//地图
+#mapcontainer {
+  height: 300px;
+  width: 500px;
+  font-size: 13px;
+}
+
 // 全局样式
 #home-container {
   width: 100%;
@@ -323,12 +424,34 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   border-radius: 20px;
 }
-#map {
+.map {
   width: 100%;
   height: 100%;
 }
+//定位按钮
+#aim {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+  font-size: 15px;
+}
 
 // 论坛样式
+.noneShow {
+  position: absolute;
+  width: 300px;
+  height: 571px;
+  background: #fff;
+}
+.noneText {
+  font-size: 30px;
+  margin-top: 30px;
+  margin-right: 20px;
+  margin-left: 20px;
+  text-align: center;
+  color: #94a4b8;
+}
 .el-aside {
   border-radius: 8px;
   scrollbar-width: none; /* firefox */
@@ -363,7 +486,7 @@ export default {
   right: 15px;
 }
 .forum-container {
-  background: #e8ecf3;
+  background-color: #e8ecf3;
   border-radius: 8px;
   margin-top: 70px;
   height: 89%;
@@ -371,62 +494,70 @@ export default {
   transform: translate(0, 0);
   position: relative;
 }
-.item-header {
-  padding-top: 10px;
+// 文章样式
+.forum-Item{
+  margin-bottom: 8px;
 }
-.forum-Item {
-  margin-bottom: 7px;
-  background-color: #fff;
-  border-radius: 8px;
-}
-.userImg {
+.userImg{
+  border-radius: 50%;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  margin-left: 6px;
-  margin-right: 6px;
 }
-.time {
-  position: fixed;
-  right: 10px;
+.userName{
+  font-size: 16px;
+  margin-left: 10px;
+}
+.time{
   color: #94a4b8;
+  position: relative;
+  left: 120px;
 }
-// 图片样式
-.imgUrl-container {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  margin-left: 9px;
-  padding-bottom: 6px;
+.userText{
+  font-size: 18px;
+  margin-top: 10px;
+  margin-left: 3px;
 }
-.imgUrl {
-  float: left;
-  margin-left: 10px;
-  margin-bottom: 10px;
-}
-.imgUrl img {
+.imgUrl{
   width: 80px;
-  height: 90px;
-}
-.userText {
-  margin-top: 6px;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  word-wrap: break-word;
-  word-break: break-all;
-  overflow: hidden;
+  height: 80px;
+  float: left;
+  margin-right: 6px;
+  margin-bottom: 5px;
 }
 
+
 //发表页面样式
-#publish-title{
+#publish-title {
   font-size: 25px;
 }
-.publish-container{
+.publish-container {
   width: 400px;
 }
-.publish-input{
+.publish-input {
   position: relative;
   left: 30px;
+}
+.imgUpload {
+  margin-top: 20px;
+  margin-right: 30px;
+  margin-left: 30px;
+}
+.imgUpload-title {
+  font-size: 20px;
+}
+.upload-div-add-img,
+.upload-div-img {
+  min-width: 100px !important;
+  height: 100px !important;
+  width: 100px !important;
+}
+.imgUpload-alert {
+  font-size: 5px;
+}
+#imgUpload-btn {
+  position: absolute;
+  top: -75px;
+  right: 90px;
+  width: 130px;
 }
 </style>

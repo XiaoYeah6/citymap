@@ -1,56 +1,29 @@
 <template>
   <div id="login-container">
     <div class="container">
-      <template>
-        <el-tabs v-model="activeName">
-          <el-tab-pane label="登录" name="login">
-            <div class="login-container">
-              <el-form ref="form" label-width="80px">
-                <el-form-item label="用户名">
-                  <el-input v-model="loginUsername" id="name-btn"></el-input>
-                </el-form-item>
-                <el-form-item type="password" label="密码">
-                  <el-input
-                    v-model="loginPassword"
-                    id="pswd-btn"
-                    type="password"
-                  ></el-input>
-                </el-form-item>
-              </el-form>
-              <el-row>
-                <el-button type="primary" id="login-btn" @click="loginHandler"
-                  >登录</el-button
-                >
-              </el-row>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="注册" name="register">
-            <div class="register-container">
-              <el-form ref="form" label-width="80px">
-                <el-form-item label="用户名">
-                  <el-input v-model="registUsername" id="rename-btn"></el-input>
-                </el-form-item>
-                <el-form-item label="密码">
-                  <el-input
-                    v-model="registPassword"
-                    id="repswd-btn"
-                    type="password"
-                  ></el-input>
-                </el-form-item>
-              </el-form>
-              <el-row>
-                <el-button
-                  @click="registHandler"
-                  type="primary"
-                  id="register-btn"
-                  :loading="this.isLoading"
-                  >注册</el-button
-                >
-              </el-row>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </template>
+      <div class="loginTitle">登录</div>
+      <div class="text-container">
+        <span>用户名</span>
+        <el-input
+          placeholder="请输入内容"
+          v-model="loginUsername"
+          id="nameInput"
+        >
+        </el-input>
+        <span>密码</span>
+        <el-input
+          placeholder="请输入密码"
+          v-model="loginPassword"
+          show-password
+          id="passInput"
+        ></el-input>
+        <el-row>
+          <el-button type="primary" round id="loginBtn" @click="loginHandler" :loading=isLoading>登录</el-button>
+        </el-row>
+        <div class="toRegist">
+          <el-link type="primary" @click="goRegist">去注册</el-link>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -63,73 +36,16 @@ import { mapActions } from "vuex";
 export default {
   data() {
     return {
-      activeName: "login",
       loginUsername: "",
       loginPassword: "",
-      registUsername: "",
-      registPassword: "",
       isLoading: false,
     };
   },
   methods: {
-    ...mapActions(["loginAction"]),
-    registHandler() {
-      this.isLoading = true;
-      if (this.registPassword == "" || this.registUsername == "") {
-        this.$alert("用户名或密码不能为空！", "Tips", {
-          confirmButtonText: "确定",
-        });
-        this.isLoading = false;
-      } else {
-        axios({
-          url: url.registUser,
-          method: "post",
-          data: {
-            userName: this.registUsername,
-            passWord: this.registPassword,
-            userImg: "https://i.loli.net/2021/04/17/uatZ6dsYSrQwLDi.jpg",
-          },
-        })
-          .then((res) => {
-            if (res.data.code == 200) {
-              const h = this.$createElement;
-              this.$notify({
-                title: "注册信息",
-                message: h("i", { style: "color: teal" }, "恭喜，注册成功！"),
-                duration: 2000,
-              });
-              this.registUsername = this.registPassword = "";
-              this.isLoading = false;
-              this.activeName = "login";
-            } else {
-              const h = this.$createElement;
-              this.$notify({
-                title: "注册信息",
-                message: h(
-                  "i",
-                  { style: "color: teal" },
-                  "用户名重复啦，请重试！"
-                ),
-                duration: 2000,
-              });
-              this.isLoading = false;
-            }
-          })
-          .catch((err) => {
-            const h = this.$createElement;
-            this.$notify({
-              title: "注册信息",
-              message: h(
-                "i",
-                { style: "color: teal" },
-                "抱歉，出现了一点问题！"
-              ),
-              duration: 2000,
-            });
-            this.isLoading = false;
-          });
-      }
+    goRegist(){
+      this.$router.push('/regist')
     },
+    ...mapActions(["loginAction"]),
     loginHandler() {
       this.isLoading = true;
       axios({
@@ -161,7 +77,7 @@ export default {
               duration: 2000,
             });
             this.isLoading = false;
-          }else if(res.data.code == 202){
+          } else if (res.data.code == 202) {
             const h = this.$createElement;
             this.$notify({
               title: "登录信息",
@@ -203,34 +119,38 @@ export default {
   border-radius: 10px;
   top: 50px;
 }
-#btn-login #btn-register {
-  position: absolute;
+
+.text-container {
+  margin-top: 20px;
+  margin-left: 120px;
+}
+.loginTitle {
+  font-size: 30px;
   text-align: center;
 }
-#name-btn {
-  width: 200px;
+#nameInput {
+  width: 250px;
+  position: relative;
+  left: 60px;
+  top: -30px;
 }
-#rename-btn {
-  width: 200px;
+#passInput {
+  width: 250px;
+  position: relative;
+  left: 60px;
+  top: -30px;
 }
-#pswd-btn {
-  width: 200px;
+.el-input--suffix {
+  padding-right: 100px !important;
 }
-#repswd-btn {
-  width: 200px;
+#loginBtn{
+  width: 160px;
+  position: relative;
+  left: 105px;
 }
-#login-btn {
-  margin-left: 100px;
-  width: 150px;
-}
-#register-btn {
-  margin-left: 100px;
-  width: 150px;
-}
-.login-container {
-  padding-left: 120px;
-}
-.register-container {
-  padding-left: 120px;
+.toRegist{
+  position: relative;
+  left: 162px;
+  margin-top: 6px;
 }
 </style>

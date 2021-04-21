@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import VueUploadImgs from 'vue-upload-imgs'
 
 Vue.config.productionTip = false
 
@@ -12,6 +13,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import '../mock/mock.js'
 
 Vue.use(ElementUI);
+Vue.use(VueUploadImgs);
 
 new Vue({
   el: '#app',
