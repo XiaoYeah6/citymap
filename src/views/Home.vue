@@ -223,7 +223,6 @@ export default {
                     duration: 2000,
                   });
                   this.getArticle();
-
                 }
               });
             });
@@ -248,7 +247,7 @@ export default {
     // 级联选择器, 点击城市列表时
     handleChange(value) {
       this.forumItem = [];
-      this.currentCityId = value[1]
+      this.currentCityId = value[1];
       this.getArticle();
     },
     handleClose(done) {
@@ -297,7 +296,7 @@ export default {
                 this.files = [];
                 this.upLoading = false;
                 this.getArticle();
-                this.$router.push('/')
+                this.$router.push("/");
               } else {
                 const h = this.$createElement;
                 this.$notify({
@@ -331,7 +330,7 @@ export default {
     //获取数据库动态
     getArticle() {
       this.forumItem = [];
-      this.isShowNone = "display: none;"
+      this.isShowNone = "display: none;";
       axios({
         url: url.getArticle,
         method: "get",
@@ -343,26 +342,35 @@ export default {
       })
         .then((res) => {
           var i;
-          for( i=0; i<res.data.length; i++ ){
-            res.data[i].createDate = res.data[i].createDate.substring(0, 10);
+          for (i = 0; i < res.data.length; i++) {
+            console.log(res.data[i].createDate);
+            var originTime = parseInt(res.data[i].createDate.substring(11, 13));
+            var zoneTime = 8;
+            var currentTime = originTime + zoneTime;
+            res.data[i].createDate =
+              res.data[i].createDate.substring(5, 10) +
+              " " +
+              currentTime +
+              ":" +
+              res.data[i].createDate.substring(14, 16);
           }
           this.forumItem = res.data;
-          if( res.data.length == 0 ){
+          if (res.data.length == 0) {
             this.isShowNone = "display: ;";
           }
         })
         .catch((err) => {
-          console.log('err');
+          console.log("err");
           const h = this.$createElement;
-            this.$notify({
-              title: "动态信息",
-              message: h("i", { style: "color: teal" }, "获取动态失败！"),
-              duration: 2000,
-            });
+          this.$notify({
+            title: "动态信息",
+            message: h("i", { style: "color: teal" }, "获取动态失败！"),
+            duration: 2000,
+          });
         });
     },
 
-    load(){
+    load() {
       getArticle();
     },
 
@@ -495,36 +503,35 @@ export default {
   position: relative;
 }
 // 文章样式
-.forum-Item{
+.forum-Item {
   margin-bottom: 8px;
 }
-.userImg{
+.userImg {
   border-radius: 50%;
   width: 30px;
   height: 30px;
 }
-.userName{
+.userName {
   font-size: 16px;
   margin-left: 10px;
 }
-.time{
+.time {
   color: #94a4b8;
   position: relative;
   left: 120px;
 }
-.userText{
+.userText {
   font-size: 18px;
   margin-top: 10px;
   margin-left: 3px;
 }
-.imgUrl{
+.imgUrl {
   width: 80px;
   height: 80px;
   float: left;
   margin-right: 6px;
   margin-bottom: 5px;
 }
-
 
 //发表页面样式
 #publish-title {
