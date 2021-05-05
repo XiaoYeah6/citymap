@@ -3,14 +3,14 @@
     <div class="container">
       <div class="registTitle">注册</div>
       <div class="text-container">
-        <span>用户名</span>
+        <span class="name">用户名</span>
         <el-input
           placeholder="请输入内容"
           v-model="registUsername"
           id="nameInput"
         >
         </el-input>
-        <span>密码</span>
+        <span class="password">密码</span>
         <el-input
           placeholder="请输入密码"
           v-model="registPassword"
@@ -54,6 +54,7 @@ export default {
     },
     ...mapActions(["loginAction"]),
     registHandler() {
+      console.log("注册");
       this.isLoading = true;
       if (this.registPassword == "" || this.registUsername == "") {
         this.$alert("用户名或密码不能为空！", "Tips", {
@@ -134,37 +135,34 @@ export default {
   top: 50px;
 }
 
-.text-container {
-  margin-top: 20px;
-  margin-left: 120px;
-}
 .registTitle {
   font-size: 30px;
   text-align: center;
 }
-#nameInput {
-  width: 250px;
+
+.text-container{
+  width: 300px;
   position: relative;
-  left: 60px;
-  top: -30px;
+  left: 150px;
 }
-#passInput {
-  width: 250px;
+#nameInput{
+  width: 200px;
+}
+#passInput{
+  width: 200px;
+}
+#registBtn{
+  margin-top: 20px;
+  width: 100px;
+}
+.name{
   position: relative;
-  left: 60px;
-  top: -30px;
+  right: 130px;
+  top: 33px;
 }
-.el-input--suffix {
-  padding-right: 100px !important;
-}
-#registBtn {
-  width: 160px;
+.password{
   position: relative;
-  left: 105px;
-}
-.toLogin {
-  position: relative;
-  left: 162px;
-  margin-top: 6px;
+  right: 130px;
+  top: 33px;
 }
 </style>

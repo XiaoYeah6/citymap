@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import VueUploadImgs from 'vue-upload-imgs'
 
+
 Vue.config.productionTip = false
 
 import '@/assets/css/reset.css'

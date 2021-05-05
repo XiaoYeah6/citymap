@@ -3,60 +3,8 @@
 
 <template>
   <div>
-    <el-container id="home-container">
-      <el-aside id="home-aside">
-        <div class="forum-header">
-          <div class="block">
-            <span class="demonstration"></span>
-            <el-cascader
-              v-model="value"
-              :options="options"
-              :props="{ expandTrigger: 'hover' }"
-              @change="handleChange"
-              :show-all-levels="false"
-            ></el-cascader>
-          </div>
-          <div class="up-btn">
-            <el-row>
-              <el-button type="primary" @click="drawer = true"
-                >发布动态</el-button
-              >
-            </el-row>
-          </div>
-        </div>
-        <div class="forum-container">
-          <div class="noneShow" :style="isShowNone">
-            <div class="noneText">这座城市还没有人发过动态哦！</div>
-          </div>
-
-          <el-col id="articleList" v-infinite-scroll="load">
-            <el-card
-              shadow="hover"
-              class="forum-Item"
-              v-for="(item, index) in forumItem"
-              :key="index"
-            >
-              <div class="item-header">
-                <img :src="item.userImg" alt="" class="userImg" />
-                <span class="userName">{{ item.userName }}</span>
-                <span class="time">{{ item.createDate }}</span>
-              </div>
-
-              <p class="userText">{{ item.text }}</p>
-              <div class="imgUrl-container">
-                <div
-                  v-for="itemImg in item.imgs"
-                  :key="itemImg.imgIndex"
-                  class="imgUrl"
-                >
-                  <img :src="itemImg.url" alt="" />
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-        </div>
-      </el-aside>
-      <el-main id="home-main">
+    <div id="home-container">
+      <div id="home-main">
         <div class="map" id="map"></div>
         <div>
           <el-row>
@@ -69,62 +17,54 @@
             ></el-button>
           </el-row>
         </div>
-      </el-main>
-    </el-container>
-    <el-drawer
-      id="publish-title"
-      title="动态发表"
-      :visible.sync="drawer"
-      :direction="direction"
-      :before-close="handleClose"
-    >
-      <el-row>
-        <el-button
-          type="primary"
-          id="imgUpload-btn"
-          round
-          @click="uploadForum"
-          :loading="this.upLoading"
-          >发布动态</el-button
-        >
-      </el-row>
-      <div class="publish-container">
-        <el-input
-          type="textarea"
-          :rows="8"
-          placeholder="请输入内容"
-          v-model="textarea"
-          class="publish-input"
-        >
-        </el-input>
-        <div class="imgUpload">
-          <vue-upload-imgs
-            multiple
-            compress
-            :before-read="beforeRead"
-            :after-read="afterRead"
-            :before-remove="beforeRemove"
-            :limit="limit"
-            :type="type"
-            @preview="preview"
-            @exceed="exceed"
-            @oversize="oversize"
-            v-model="files"
-          >
-            <span class="imgUpload-title">图片上传</span>
-            <span class="imgUpload-alert"
-              >（限制9张，小于1M，png、jpg格式）</span
-            >
-          </vue-upload-imgs>
-          <div class="preview-bg" v-show="isPreview">
-            <div class="dialog">
-              <button class="close-preview" @click="closePreview">关闭</button>
-              <img :src="previewIMG" class="preview-img" />
-            </div>
+      </div>
+      <el-aside id="home-aside">
+        <div class="forum-header">
+          <div class="block">
+            <span class="demonstration"></span>
+            <el-cascader
+              v-model="value"
+              :options="options"
+              :props="{ expandTrigger: 'hover' }"
+              @change="handleChange"
+            ></el-cascader>
+          </div>
+          <div class="up-btn">
+            <el-row>
+              <el-button type="primary" @click="toPublish" :loading=isLoading>发布动态</el-button>
+            </el-row>
           </div>
         </div>
-      </div>
-    </el-drawer>
+        <div class="forum-container">
+          <div class="noneShow" :style="isShowNone">
+            <div class="noneText">这片区域还没有人发过动态哦！</div>
+          </div>
+
+          <el-col id="articleList" v-infinite-scroll="load">
+            <el-card
+              shadow="hover"
+              class="forum-Item"
+              v-for="(item, index) in forumItem"
+              :key="index"
+            >
+              <div class="item-header">
+                <img :src="item.userImg" alt="" id="userImg" />
+                <span class="userName">{{ item.userName }}</span>
+                <div class="address">{{ item.address }}</div>
+              </div>
+
+              <p class="userText">{{ item.text }}</p>
+              <div class="imgUrl-container">
+                <div v-for="itemImg in item.imgs" :key="itemImg.imgIndex">
+                  <img :src="itemImg.url" alt="" id="imgUrl"/>
+                </div>
+              </div>
+              <span class="time">{{ item.createDate }}</span>
+            </el-card>
+          </el-col>
+        </div>
+      </el-aside>
+    </div>
   </div>
 </template>
 
@@ -134,34 +74,31 @@ import url from "../service.config.js";
 import { mapState } from "vuex";
 import AMap from "AMap";
 import citys from "../../data/citys.json";
+import moment from "moment";
 
 export default {
   data() {
     return {
-      upLoading: false,
+      isLoading: false,
       isAimLoad: false,
       currentProId: "110000",
       currentCityId: "110000",
+      currentRegionId: "110102",
+      currentPoint: [116.397428, 39.90923],
+      currentMarker: [116.392952, 39.892855],
       currentAddress: "北京市西城区大栅栏街道",
-      value: ["110000", "110000"],
+      currentMarkerAddress: "北京市西城区大栅栏街道",
+      value: ["110000", "110000", "110102"],
       options: citys,
       forumItem: [],
-      drawer: false,
       direction: "rtl",
-      textarea: "",
-      articleStart: 0,
-      articleLimit: 30,
+      showArticlePoint: [],
+
+      markerList: [],
+      chooseRegion: [],
 
       //是否显示无人发表动态提示
       isShowNone: "display: none;",
-
-      //上传图片
-      files: [],
-      maxSize: 1024 * 1024, // 1024 KB
-      previewIMG: null,
-      limit: 9,
-      isPreview: false,
-      type: 0, // 0 预览模式 1 列表模式 2 预览模式 + 上传按钮
     };
   },
 
@@ -170,14 +107,39 @@ export default {
   },
 
   methods: {
-    //初次加载以及点击定位按
-    toAim() {
+    //去发布页面
+    toPublish() {
+      this.$router.push({
+        path: "/publish",
+        query: {
+          param: this.chooseRegion,
+          regionId: this.currentRegionId,
+        },
+      });
+    },
+
+    //获取marker
+    formatMarker() {
+      var temp = this.markerList.map((item) => {
+        var tempA = new AMap.Marker({
+          position: new AMap.LngLat(...item), // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+        });
+        tempA.on("click", () => {
+          this.showArticlePoint = item;
+          this.getArticleByMarker(item);
+        });
+        return tempA;
+      });
+      this.markerList = temp;
+    },
+
+    //定位
+    getLocation() {
       var map = new AMap.Map("map", {
         resizeEnable: true,
         center: [116.397428, 39.90923],
-        zoom: 13,
+        zoom: 11,
       });
-      //定位
       AMap.plugin("AMap.Geolocation", () => {
         var geolocation = new AMap.Geolocation({
           showButton: false,
@@ -193,6 +155,7 @@ export default {
             var addLat = result.position.lat;
             var addLng = result.position.lng;
             var add = addLng + "," + addLat;
+            this.currentPoint = [add];
             //获取当前城市id
             AMap.plugin("AMap.Geocoder", () => {
               var geocoder = new AMap.Geocoder({
@@ -201,6 +164,7 @@ export default {
               map.addControl(geocoder);
               geocoder.getAddress(add, (status, result) => {
                 if (status === "complete" && result.regeocode) {
+                  console.log(result);
                   var currentAddressId =
                     result.regeocode.addressComponent.adcode;
                   this.currentAddress =
@@ -209,8 +173,17 @@ export default {
                     result.regeocode.addressComponent.district;
                   this.currentCityId = currentAddressId.substring(0, 4) + "00";
                   this.currentProId = currentAddressId.substring(0, 2) + "0000";
-                  this.value = [this.currentProId, this.currentCityId];
-                  this.getArticle();
+                  this.currentRegionId = currentAddressId;
+                  this.value = [
+                    this.currentProId,
+                    this.currentCityId,
+                    this.currentRegionId,
+                  ];
+                  this.chooseRegion = this.currentPoint;
+                  this.getArticleById().then(() => {
+                    this.formatMarker();
+                    map.add(this.markerList);
+                  });
                 } else {
                   const h = this.$createElement;
                   this.$notify({
@@ -222,7 +195,7 @@ export default {
                     ),
                     duration: 2000,
                   });
-                  this.getArticle();
+                  this.getArticleById();
                 }
               });
             });
@@ -233,10 +206,16 @@ export default {
               message: h("i", { style: "color: teal" }, "获取当前位置失败！"),
               duration: 2000,
             });
-            this.getArticle();
+            this.getArticleById();
           }
         });
       });
+    },
+
+    //初次加载以及点击定位按
+    toAim() {
+      //定位
+      this.getLocation();
     },
 
     //初始化地图
@@ -245,119 +224,58 @@ export default {
     },
 
     // 级联选择器, 点击城市列表时
-    handleChange(value) {
+    async handleChange(value) {
       this.forumItem = [];
-      this.currentCityId = value[1];
-      this.getArticle();
-    },
-    handleClose(done) {
-      if (this.textarea == "" && this.files.length == []) {
-        done();
-      } else {
-        this.$confirm("确认退出吗？")
-          .then((_) => {
-            done();
-          })
-          .catch((_) => {});
-      }
-    },
-    //发布动态
-    uploadForum() {
-      if (this.userInfo.userName == "未登录") {
-        alert("请先登录！");
-        this.$router.push("/login");
-      } else {
-        if (this.textarea == "" && this.files == "") {
-          alert("请输入内容！");
-        } else {
-          //上传信息
-          this.upLoading = true;
-          axios({
-            url: url.writeArticle,
-            method: "post",
-            data: {
-              userName: this.userInfo.userName,
-              userImg: this.userInfo.userImg,
-              text: this.textarea,
-              imgs: this.files,
-              address: this.currentAddress,
-              cityId: this.currentCityId,
-            },
-          })
-            .then((res) => {
-              if (res.data.code == 200) {
-                const h = this.$createElement;
-                this.$notify({
-                  title: "发布信息",
-                  message: h("i", { style: "color: teal" }, "发布成功！"),
-                  duration: 2000,
-                });
-                this.textarea = "";
-                this.files = [];
-                this.upLoading = false;
-                this.getArticle();
-                this.$router.push("/");
-              } else {
-                const h = this.$createElement;
-                this.$notify({
-                  title: "发布信息",
-                  message: h(
-                    "i",
-                    { style: "color: teal" },
-                    "抱歉，发布失败（502）！"
-                  ),
-                  duration: 2000,
-                });
-                this.upLoading = false;
-              }
-            })
-            .catch((err) => {
-              const h = this.$createElement;
-              this.$notify({
-                title: "发布信息",
-                message: h(
-                  "i",
-                  { style: "color: teal" },
-                  "出现了一点问题（400）！"
-                ),
-                duration: 2000,
-              });
-              this.upLoading = false;
-            });
-        }
-      }
-    },
-    //获取数据库动态
-    getArticle() {
-      this.forumItem = [];
-      this.isShowNone = "display: none;";
-      axios({
-        url: url.getArticle,
+      this.currentRegionId = value[3];
+      const res = await axios({
+        url: "https://restapi.amap.com/v3/config/district?parameters",
         method: "get",
         params: {
-          cityId: this.currentCityId,
-          start: this.articleStart,
-          limit: this.articleLimit,
+          key: "0f1d9599c9ab0432e6c4d7542d37915e",
+          keywords: this.value[2],
+          subdistrict: 0,
+        },
+      });
+      this.chooseRegion = [res.data.districts[0].center];
+      var lng = res.data.districts[0].center.substring(0, 10);
+      var lat = res.data.districts[0].center.substring(11, 21);
+      var map = new AMap.Map("map", {
+        resizeEnable: true,
+        center: [lng, lat],
+        zoom: 15,
+      });
+
+      this.getArticleById();
+    },
+
+    //获取数据库动态
+    getArticleById() {
+      this.forumItem = [];
+      this.isShowNone = "display: none;";
+      return axios({
+        url: url.getArticleById,
+        method: "get",
+        params: {
+          regionId: this.currentRegionId,
         },
       })
         .then((res) => {
           var i;
+          var tempmarkerList = [];
+          res.data.map((item) => {
+            item.createDate = moment(item.createDate).format("lll");
+            return item;
+          });
           for (i = 0; i < res.data.length; i++) {
-            console.log(res.data[i].createDate);
-            var originTime = parseInt(res.data[i].createDate.substring(11, 13));
-            var zoneTime = 8;
-            var currentTime = originTime + zoneTime;
-            res.data[i].createDate =
-              res.data[i].createDate.substring(5, 10) +
-              " " +
-              currentTime +
-              ":" +
-              res.data[i].createDate.substring(14, 16);
+            // res.data[i].marker
+            tempmarkerList.push(res.data[i].marker);
           }
+          this.markerList = tempmarkerList;
           this.forumItem = res.data;
           if (res.data.length == 0) {
             this.isShowNone = "display: ;";
           }
+          console.log(res.data);
         })
         .catch((err) => {
           console.log("err");
@@ -370,37 +288,32 @@ export default {
         });
     },
 
+    //根据marker点获取文章
+    getArticleByMarker(mk) {
+      this.forumItem = [];
+      console.log(mk);
+      axios({
+        url: url.getArticleByMarker,
+        method: "post",
+        data: {
+          markerPoint: mk,
+        },
+      })
+        .then((res) => {
+          console.log(res);
+          res.data.map((item) => {
+            item.createDate = moment(item.createDate).format("lll");
+            return item;
+          });
+          this.forumItem = res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
     load() {
-      getArticle();
-    },
-
-    //上传图片
-    beforeRemove(index, file) {
-      return true;
-    },
-
-    preview(index, file) {
-      this.previewIMG = file.url;
-      this.isPreview = true;
-    },
-
-    exceed() {
-      alert(`只能上传${this.limit}张图片`);
-    },
-
-    beforeRead(files) {
-      for (let i = 0, len = files.length; i < len; i++) {
-        const file = files[i];
-        if (file.type != "image/jpeg" && file.type != "image/png") {
-          alert("只能上传jpg和png格式的图片");
-          return false;
-        }
-      }
-      return true;
-    },
-
-    closePreview() {
-      this.isPreview = false;
+      getArticleById();
     },
   },
   computed: {
@@ -422,15 +335,17 @@ export default {
   width: 100%;
   height: 100%;
   position: absolute;
-  background: #e8ecf3;
+  background-color: #e8ecf3;
+  display: flex;
+  flex-direction: row;
 }
 
 // 地图样式
 #home-main {
-  padding: 0;
-  margin-left: 1%;
+  flex: 1.2;
+  background: #fff;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
-  border-radius: 20px;
 }
 .map {
   width: 100%;
@@ -446,9 +361,15 @@ export default {
 }
 
 // 论坛样式
+#home-aside {
+  flex: 0.5;
+  margin-left: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+}
 .noneShow {
   position: absolute;
-  width: 300px;
+  width: 420px;
   height: 571px;
   background: #fff;
 }
@@ -479,11 +400,24 @@ export default {
   border-radius: 8px;
   position: fixed;
   top: 80px;
-  width: 294px;
+  width: 412px;
   z-index: 999;
 }
+.address{
+  font-size: 10px;
+  width: 300px;
+  color: #94a4b8;
+  height: 20px;
+  position: relative;
+  left: 90px;
+  top: -25px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
 .block {
-  width: 130px;
+  width: 240px;
   height: 80px;
   line-height: 45px;
   margin-left: 10px;
@@ -504,67 +438,34 @@ export default {
 }
 // 文章样式
 .forum-Item {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-.userImg {
-  border-radius: 50%;
-  width: 30px;
+.item-header {
+  margin-bottom: 10px;
   height: 30px;
 }
-.userName {
-  font-size: 16px;
-  margin-left: 10px;
+#userImg {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
 }
-.time {
-  color: #94a4b8;
+.userName {
+  margin-left: 6px;
   position: relative;
-  left: 120px;
+  top: 3px;
 }
 .userText {
-  font-size: 18px;
-  margin-top: 10px;
+  font-size: 16px;
   margin-left: 3px;
 }
-.imgUrl {
-  width: 80px;
-  height: 80px;
-  float: left;
-  margin-right: 6px;
-  margin-bottom: 5px;
+#imgUrl {
+  width: 160px;
+  height: 160px;
 }
-
-//发表页面样式
-#publish-title {
-  font-size: 25px;
-}
-.publish-container {
-  width: 400px;
-}
-.publish-input {
+.time{
+  color: #94a4b8;
   position: relative;
-  left: 30px;
-}
-.imgUpload {
-  margin-top: 20px;
-  margin-right: 30px;
-  margin-left: 30px;
-}
-.imgUpload-title {
-  font-size: 20px;
-}
-.upload-div-add-img,
-.upload-div-img {
-  min-width: 100px !important;
-  height: 100px !important;
-  width: 100px !important;
-}
-.imgUpload-alert {
-  font-size: 5px;
-}
-#imgUpload-btn {
-  position: absolute;
-  top: -75px;
-  right: 90px;
-  width: 130px;
+  top: 10px;
+  left: 240px;
 }
 </style>

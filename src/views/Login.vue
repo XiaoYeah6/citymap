@@ -3,14 +3,14 @@
     <div class="container">
       <div class="loginTitle">登录</div>
       <div class="text-container">
-        <span>用户名</span>
+        <span class="name">用户名</span>
         <el-input
           placeholder="请输入内容"
           v-model="loginUsername"
           id="nameInput"
         >
         </el-input>
-        <span>密码</span>
+        <span class="password">密码</span>
         <el-input
           placeholder="请输入密码"
           v-model="loginPassword"
@@ -102,6 +102,18 @@ export default {
 </script>
 
 <style lang="scss">
+.name{
+  position: relative;
+  right: 130px;
+  top: 33px;
+}
+.password{
+  position: relative;
+  right: 130px;
+  top: 33px;
+}
+
+
 #login-container {
   width: 100%;
   height: 100%;
@@ -119,38 +131,12 @@ export default {
   border-radius: 10px;
   top: 50px;
 }
-
-.text-container {
-  margin-top: 20px;
-  margin-left: 120px;
-}
 .loginTitle {
   font-size: 30px;
   text-align: center;
 }
-#nameInput {
-  width: 250px;
-  position: relative;
-  left: 60px;
-  top: -30px;
-}
-#passInput {
-  width: 250px;
-  position: relative;
-  left: 60px;
-  top: -30px;
-}
-.el-input--suffix {
-  padding-right: 100px !important;
-}
 #loginBtn{
-  width: 160px;
-  position: relative;
-  left: 105px;
-}
-.toRegist{
-  position: relative;
-  left: 162px;
-  margin-top: 6px;
+  margin-top: 20px;
+  width: 100px;
 }
 </style>
